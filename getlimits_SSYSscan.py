@@ -14,8 +14,15 @@ import scipy.interpolate as interp
 #tmp
 from mpl_toolkits.mplot3d import Axes3D
 
+import sys
 
-baseoutdir='results'
+# Get value of SSYS to use from the command line
+
+print sys.argv
+SSYS = np.float(sys.argv[1])
+print SSYS
+
+baseoutdir='results_s-{0}'.format(SSYS)
 
 #=======================================================================
 # Define experiments
@@ -43,9 +50,9 @@ baseoutdir='results'
 # Signal systematics pg 11:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SR1_0lep = tools.Experiment(name='SR1_0lep', o=15, ssys=0.3, b=17.5, bsys=0.18, sK=1., outdir=baseoutdir)
-SR2_0lep = tools.Experiment(name='SR2_0lep', o=2 , ssys=0.3, b= 4.7, bsys=0.33, sK=1., outdir=baseoutdir)
-SR3_0lep = tools.Experiment(name='SR3_0lep', o=1 , ssys=0.3, b= 2.7, bsys=0.45, sK=1., outdir=baseoutdir)
+SR1_0lep = tools.Experiment(name='SR1_0lep', o=15, ssys=SSYS, b=17.5, bsys=0.18, sK=1., outdir=baseoutdir)
+SR2_0lep = tools.Experiment(name='SR2_0lep', o=2 , ssys=SSYS, b= 4.7, bsys=0.33, sK=1., outdir=baseoutdir)
+SR3_0lep = tools.Experiment(name='SR3_0lep', o=1 , ssys=SSYS, b= 2.7, bsys=0.45, sK=1., outdir=baseoutdir)
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 4):
 SR_obslim_0lep = [10.0,3.6,3.9]
@@ -64,18 +71,18 @@ N_0lep = 100000 # Number of detector events simulated by Martin
 # Signal systematics estimated initially from table 5:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SRtN2_1lep = tools.Experiment(name='SRtN2_1lep', o=14 , ssys=0.05, b=13. , bsys=3./13.  , sK=1., outdir=baseoutdir)
-SRtN3_1lep = tools.Experiment(name='SRtN3_1lep', o=7  , ssys=0.06, b=5.  , bsys=2./5.   , sK=1., outdir=baseoutdir)
+SRtN2_1lep = tools.Experiment(name='SRtN2_1lep', o=14 , ssys=SSYS, b=13. , bsys=3./13.  , sK=1., outdir=baseoutdir)
+SRtN3_1lep = tools.Experiment(name='SRtN3_1lep', o=7  , ssys=SSYS, b=5.  , bsys=2./5.   , sK=1., outdir=baseoutdir)
 
-SRbC1_1lep = tools.Experiment(name='SRbC1_1lep', o=456, ssys=0.05, b=482., bsys=76./482., sK=1., outdir=baseoutdir)
-SRbC2_1lep = tools.Experiment(name='SRbC2_1lep', o=25 , ssys=0.05, b=18. , bsys=5./18.  , sK=1., outdir=baseoutdir)
-SRbC3_1lep = tools.Experiment(name='SRbC3_1lep', o=6  , ssys=0.05, b=7.  , bsys=3./7.   , sK=1., outdir=baseoutdir)
+SRbC1_1lep = tools.Experiment(name='SRbC1_1lep', o=456, ssys=SSYS, b=482., bsys=76./482., sK=1., outdir=baseoutdir)
+SRbC2_1lep = tools.Experiment(name='SRbC2_1lep', o=25 , ssys=SSYS, b=18. , bsys=5./18.  , sK=1., outdir=baseoutdir)
+SRbC3_1lep = tools.Experiment(name='SRbC3_1lep', o=6  , ssys=SSYS, b=7.  , bsys=3./7.   , sK=1., outdir=baseoutdir)
 
 # Only the 3 most constraining bins of the shape data are used in the ATLAS fit
 # (data in top row of figure 2)
-SRtN1shape1_1lep = tools.Experiment(name='SRtN1.shape(1)_1lep', o=253, ssys=0.05, b=250., bsys=57./250., sK=1 , outdir=baseoutdir)
-SRtN1shape2_1lep = tools.Experiment(name='SRtN1.shape(2)_1lep', o=165, ssys=0.05, b=174., bsys=28./174., sK=1., outdir=baseoutdir)
-SRtN1shape3_1lep = tools.Experiment(name='SRtN1.shape(3)_1lep', o=235, ssys=0.05, b=262., bsys=34./262., sK=1., outdir=baseoutdir)
+SRtN1shape1_1lep = tools.Experiment(name='SRtN1.shape(1)_1lep', o=253, ssys=SSYS, b=250., bsys=57./250., sK=1 , outdir=baseoutdir)
+SRtN1shape2_1lep = tools.Experiment(name='SRtN1.shape(2)_1lep', o=165, ssys=SSYS, b=174., bsys=28./174., sK=1., outdir=baseoutdir)
+SRtN1shape3_1lep = tools.Experiment(name='SRtN1.shape(3)_1lep', o=235, ssys=SSYS, b=262., bsys=34./262., sK=1., outdir=baseoutdir)
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 8):
 #(SRtN2,SRtN3,SRbC1,SRbC2,SRbC3,SRtN_shape_bin1,SRtN_shape_bin2,SRtN_shape_bin3)
@@ -96,10 +103,10 @@ N_1lep = 100000 # Number of detector events simulated by Martin
 # Signal systematics initially estimated from table 7:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SRM90_2lep  = tools.Experiment(name='SRM90_2lep' , o=260, ssys=0.2, b=300., bsys=40./300., sK=1., outdir=baseoutdir)
-SRM100_2lep = tools.Experiment(name='SRM100_2lep', o=3  , ssys=0.2, b=4.8 , bsys=2.2/4.8 , sK=1., outdir=baseoutdir)
-SRM110_2lep = tools.Experiment(name='SRM110_2lep', o=7  , ssys=0.2, b=11. , bsys=4./11.  , sK=1., outdir=baseoutdir)
-SRM120_2lep = tools.Experiment(name='SRM120_2lep', o=3  , ssys=0.2, b=4.3 , bsys=1.3/4.3 , sK=1., outdir=baseoutdir)
+SRM90_2lep  = tools.Experiment(name='SRM90_2lep' , o=260, ssys=SSYS, b=300., bsys=40./300., sK=1., outdir=baseoutdir)
+SRM100_2lep = tools.Experiment(name='SRM100_2lep', o=3  , ssys=SSYS, b=4.8 , bsys=2.2/4.8 , sK=1., outdir=baseoutdir)
+SRM110_2lep = tools.Experiment(name='SRM110_2lep', o=7  , ssys=SSYS, b=11. , bsys=4./11.  , sK=1., outdir=baseoutdir)
+SRM120_2lep = tools.Experiment(name='SRM120_2lep', o=3  , ssys=SSYS, b=4.3 , bsys=1.3/4.3 , sK=1., outdir=baseoutdir)
 
 SRs_2lep = [SRM90_2lep,SRM100_2lep,SRM110_2lep,SRM120_2lep]
 
@@ -120,12 +127,12 @@ SR_explim_2lep = L_2lep*np.array([3.5,0.30,0.42,0.27])
 # Signal systematics pg 11:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SRA150_2b = tools.Experiment(name='SRA150_2b', o=102, ssys=0.2, b=94. , bsys=13./94. , sK=1., outdir=baseoutdir)
-SRA200_2b = tools.Experiment(name='SRA200_2b', o=48 , ssys=0.2, b=39. , bsys=6./39.  , sK=1., outdir=baseoutdir)
-SRA250_2b = tools.Experiment(name='SRA250_2b', o=14 , ssys=0.3, b=15.8, bsys=2.8/15.8, sK=1., outdir=baseoutdir)
-SRA300_2b = tools.Experiment(name='SRA300_2b', o=7  , ssys=0.2, b=5.9 , bsys=1.1/5.9 , sK=1., outdir=baseoutdir)
-SRA350_2b = tools.Experiment(name='SRA350_2b', o=3  , ssys=0.2, b=2.5 , bsys=0.6/2.5 , sK=1., outdir=baseoutdir)
-SRB_2b    = tools.Experiment(name='SRB_2b'   , o=65 , ssys=0.2, b=64. , bsys=10./64. , sK=1., outdir=baseoutdir)
+SRA150_2b = tools.Experiment(name='SRA150_2b', o=102, ssys=SSYS, b=94. , bsys=13./94. , sK=1., outdir=baseoutdir)
+SRA200_2b = tools.Experiment(name='SRA200_2b', o=48 , ssys=SSYS, b=39. , bsys=6./39.  , sK=1., outdir=baseoutdir)
+SRA250_2b = tools.Experiment(name='SRA250_2b', o=14 , ssys=SSYS, b=15.8, bsys=2.8/15.8, sK=1., outdir=baseoutdir)
+SRA300_2b = tools.Experiment(name='SRA300_2b', o=7  , ssys=SSYS, b=5.9 , bsys=1.1/5.9 , sK=1., outdir=baseoutdir)
+SRA350_2b = tools.Experiment(name='SRA350_2b', o=3  , ssys=SSYS, b=2.5 , bsys=0.6/2.5 , sK=1., outdir=baseoutdir)
+SRB_2b    = tools.Experiment(name='SRB_2b'   , o=65 , ssys=SSYS, b=64. , bsys=10./64. , sK=1., outdir=baseoutdir)
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 7):
 SR_obslim_2b = [38,26,9.0, 7.5,5.2,27]
@@ -387,7 +394,7 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
             axCL.axvline(x=explim,ls='--',color='k')
             #a.getCLvals(svals,regen=regenCL,method='asymptotic')
             #a.plotCL(ax=axCL)
-            a.getCLvals(svals,regen=regenCL,method='simulate',N=2000,regenQdist=regenQdist) #'marg') #'asymptotic')
+            a.getCLvals(svals,regen=regenCL,method='simulate',N=100000,regenQdist=regenQdist) #'marg') #'asymptotic')
             a.plotCL(ax=axCL)
             axCL.set_xscale('log')
             axCL.set_xlim(1,np.max(svals))
