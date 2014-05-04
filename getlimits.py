@@ -10,6 +10,8 @@ from matplotlib.patches import Rectangle
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, ScalarFormatter
 from matplotlib import colors
 import scipy.interpolate as interp
+from scipy.interpolate import griddata
+import pickle as pkl
 
 #tmp
 from mpl_toolkits.mplot3d import Axes3D
@@ -43,13 +45,13 @@ baseoutdir='results'
 # Signal systematics pg 11:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SR1_0lep = tools.Experiment(name='SR1_0lep', o=15, ssys=0.3, b=17.5, bsys=0.18, sK=1., outdir=baseoutdir)
-SR2_0lep = tools.Experiment(name='SR2_0lep', o=2 , ssys=0.3, b= 4.7, bsys=0.33, sK=1., outdir=baseoutdir)
-SR3_0lep = tools.Experiment(name='SR3_0lep', o=1 , ssys=0.3, b= 2.7, bsys=0.45, sK=1., outdir=baseoutdir)
+SR1_0lep = tools.Experiment(name='SR1_0lep', o=15, ssys=0.2, b=17.5, bsys=0.18, sK=1.15, outdir=baseoutdir, obslim=10.0, explim=10.6)
+SR2_0lep = tools.Experiment(name='SR2_0lep', o=2 , ssys=0.1, b= 4.7, bsys=0.33, sK=1.15, outdir=baseoutdir, obslim=3.6,  explim=5.3)
+SR3_0lep = tools.Experiment(name='SR3_0lep', o=1 , ssys=0.29, b= 2.7, bsys=0.45, sK=1.13, outdir=baseoutdir, obslim=3.9,  explim=4.5)
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 4):
-SR_obslim_0lep = [10.0,3.6,3.9]
-SR_explim_0lep = [10.6,5.3,4.5]
+#SR_obslim_0lep = [10.0,3.6,3.9]
+#SR_explim_0lep = [10.6,5.3,4.5]
 
 SRs_0lep = [SR1_0lep,SR2_0lep,SR3_0lep]
 
@@ -64,23 +66,23 @@ N_0lep = 100000 # Number of detector events simulated by Martin
 # Signal systematics estimated initially from table 5:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SRtN2_1lep = tools.Experiment(name='SRtN2_1lep', o=14 , ssys=0.05, b=13. , bsys=3./13.  , sK=1., outdir=baseoutdir)
-SRtN3_1lep = tools.Experiment(name='SRtN3_1lep', o=7  , ssys=0.06, b=5.  , bsys=2./5.   , sK=1., outdir=baseoutdir)
+SRtN2_1lep = tools.Experiment(name='SRtN2_1lep', o=14 , ssys=0.05, b=13. , bsys=3./13.  , sK=1.1, outdir=baseoutdir, obslim=10.7, explim=10.0)
+SRtN3_1lep = tools.Experiment(name='SRtN3_1lep', o=7  , ssys=0.04, b=5.  , bsys=2./5.   , sK=1.2, outdir=baseoutdir, obslim=8.5,  explim=6.7)
 
-SRbC1_1lep = tools.Experiment(name='SRbC1_1lep', o=456, ssys=0.05, b=482., bsys=76./482., sK=1., outdir=baseoutdir)
-SRbC2_1lep = tools.Experiment(name='SRbC2_1lep', o=25 , ssys=0.05, b=18. , bsys=5./18.  , sK=1., outdir=baseoutdir)
-SRbC3_1lep = tools.Experiment(name='SRbC3_1lep', o=6  , ssys=0.05, b=7.  , bsys=3./7.   , sK=1., outdir=baseoutdir)
+SRbC1_1lep = tools.Experiment(name='SRbC1_1lep', o=456, ssys=0.03, b=482., bsys=76./482., sK=1.98, outdir=baseoutdir, obslim=83.2, explim=97.6)
+SRbC2_1lep = tools.Experiment(name='SRbC2_1lep', o=25 , ssys=0.075, b=18. , bsys=5./18. , sK=0.89, outdir=baseoutdir, obslim=19.5, explim=15.7)
+SRbC3_1lep = tools.Experiment(name='SRbC3_1lep', o=6  , ssys=0.375, b=7.  , bsys=3./7.   , sK=1.6, outdir=baseoutdir, obslim=7.6,  explim=7.6)
 
 # Only the 3 most constraining bins of the shape data are used in the ATLAS fit
 # (data in top row of figure 2)
-SRtN1shape1_1lep = tools.Experiment(name='SRtN1.shape(1)_1lep', o=253, ssys=0.05, b=250., bsys=57./250., sK=1 , outdir=baseoutdir)
-SRtN1shape2_1lep = tools.Experiment(name='SRtN1.shape(2)_1lep', o=165, ssys=0.05, b=174., bsys=28./174., sK=1., outdir=baseoutdir)
-SRtN1shape3_1lep = tools.Experiment(name='SRtN1.shape(3)_1lep', o=235, ssys=0.05, b=262., bsys=34./262., sK=1., outdir=baseoutdir)
+SRtN1shape1_1lep = tools.Experiment(name='SRtN1.shape(1)_1lep', o=253, ssys=0.31, b=250., bsys=57./250., sK=1.9 , outdir=baseoutdir, obslim=85.7, explim=89.8)
+SRtN1shape2_1lep = tools.Experiment(name='SRtN1.shape(2)_1lep', o=165, ssys=0.33, b=174., bsys=28./174., sK=1.79, outdir=baseoutdir, obslim=49.8, explim=45.0)
+SRtN1shape3_1lep = tools.Experiment(name='SRtN1.shape(3)_1lep', o=235, ssys=0.16, b=262., bsys=34./262., sK=1.65, outdir=baseoutdir, obslim=38.9, explim=55.5)
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 8):
 #(SRtN2,SRtN3,SRbC1,SRbC2,SRbC3,SRtN_shape_bin1,SRtN_shape_bin2,SRtN_shape_bin3)
-SR_obslim_1lep = [10.7,8.5,83.2,19.5,7.6,85.7,49.8,38.9]
-SR_explim_1lep = [10.0,6.7,97.6,15.7,7.6,89.8,45.0,55.5]
+#SR_obslim_1lep = [10.7,8.5,83.2,19.5,7.6,85.7,49.8,38.9]
+#SR_explim_1lep = [10.0,6.7,97.6,15.7,7.6,89.8,45.0,55.5]
 
 SRs_1lep = [SRtN2_1lep,SRtN3_1lep,SRbC1_1lep,SRbC2_1lep,SRbC3_1lep,SRtN1shape1_1lep,SRtN1shape2_1lep,SRtN1shape3_1lep
 ]
@@ -96,21 +98,23 @@ N_1lep = 100000 # Number of detector events simulated by Martin
 # Signal systematics initially estimated from table 7:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SRM90_2lep  = tools.Experiment(name='SRM90_2lep' , o=260, ssys=0.2, b=300., bsys=40./300., sK=1., outdir=baseoutdir)
-SRM100_2lep = tools.Experiment(name='SRM100_2lep', o=3  , ssys=0.2, b=4.8 , bsys=2.2/4.8 , sK=1., outdir=baseoutdir)
-SRM110_2lep = tools.Experiment(name='SRM110_2lep', o=7  , ssys=0.2, b=11. , bsys=4./11.  , sK=1., outdir=baseoutdir)
-SRM120_2lep = tools.Experiment(name='SRM120_2lep', o=3  , ssys=0.2, b=4.3 , bsys=1.3/4.3 , sK=1., outdir=baseoutdir)
-
-SRs_2lep = [SRM90_2lep,SRM100_2lep,SRM110_2lep,SRM120_2lep]
 
 L_2lep = 20.3 #fb^-1 - integrated luminosity used for 2 lep. analysis
 N_2lep = 100000 # Number of detector events simulated by Martin
+# Have observed and expected limits on cross section; multiply by luminosity to get number of events
+
+SRM90_2lep  = tools.Experiment(name='SRM90_2lep' , o=260, ssys=0.04, b=300., bsys=40./300., sK=1.34, outdir=baseoutdir, obslim=L_2lep*2.5,  explim=L_2lep*3.5 )
+SRM100_2lep = tools.Experiment(name='SRM100_2lep', o=3  , ssys=0.16, b=4.8 , bsys=2.2/4.8 , sK=1.14, outdir=baseoutdir, obslim=L_2lep*0.27, explim=L_2lep*0.30)
+SRM110_2lep = tools.Experiment(name='SRM110_2lep', o=7  , ssys=0.09, b=11. , bsys=4./11.  , sK=1.3, outdir=baseoutdir, obslim=L_2lep*0.40, explim=L_2lep*0.42)
+SRM120_2lep = tools.Experiment(name='SRM120_2lep', o=3  , ssys=0.1, b=4.3 , bsys=1.3/4.3 , sK=1.2, outdir=baseoutdir, obslim=L_2lep*0.23, explim=L_2lep*0.27)
+
+SRs_2lep = [SRM90_2lep,SRM100_2lep,SRM110_2lep,SRM120_2lep]
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 8):
 # (SRM90_2lep,SRM100_2lep,SRM110_2lep,SRM120_2lep)
 # Have observed and expected limits on cross section; multiply by luminosity to get number of events
-SR_obslim_2lep = L_2lep*np.array([2.5,0.27,0.40,0.23])
-SR_explim_2lep = L_2lep*np.array([3.5,0.30,0.42,0.27])
+#SR_obslim_2lep = L_2lep*np.array([2.5,0.27,0.40,0.23])
+#SR_explim_2lep = L_2lep*np.array([3.5,0.30,0.42,0.27])
 
 #-----------------------------------------------------------------------
 
@@ -120,18 +124,23 @@ SR_explim_2lep = L_2lep*np.array([3.5,0.30,0.42,0.27])
 # Signal systematics pg 11:
 # "For the signal prediction, the systematic uncertainty is approximately 30%, constant across the plane of top squark and LSP masses. The uncertainty is dominated by the uncertainties on the jet energy scale (25%) and b-tagging (15%) as well as by the theoretical uncertainties on the cross section (14%).
 # tuning notes: Observed limit is being overestimated, so turning down the signal efficiency scaling parameter
-SRA150_2b = tools.Experiment(name='SRA150_2b', o=102, ssys=0.2, b=94. , bsys=13./94. , sK=1., outdir=baseoutdir)
-SRA200_2b = tools.Experiment(name='SRA200_2b', o=48 , ssys=0.2, b=39. , bsys=6./39.  , sK=1., outdir=baseoutdir)
-SRA250_2b = tools.Experiment(name='SRA250_2b', o=14 , ssys=0.3, b=15.8, bsys=2.8/15.8, sK=1., outdir=baseoutdir)
-SRA300_2b = tools.Experiment(name='SRA300_2b', o=7  , ssys=0.2, b=5.9 , bsys=1.1/5.9 , sK=1., outdir=baseoutdir)
-SRA350_2b = tools.Experiment(name='SRA350_2b', o=3  , ssys=0.2, b=2.5 , bsys=0.6/2.5 , sK=1., outdir=baseoutdir)
-SRB_2b    = tools.Experiment(name='SRB_2b'   , o=65 , ssys=0.2, b=64. , bsys=10./64. , sK=1., outdir=baseoutdir)
+# EXTRA! In the mchar-mneut = 20 GeV plane for the b-chargino analysis our limits in the stop-neutralino plane come out way too strong.
+# Applying this extra factor to scale down the signal efficiency, though this will throw off the agreement with the limit on number of new physics events. 
+#Note: siglike = logpoissonlike(n,self.sK*s*(1+dels*self.ssys)+self.b*(1+delb*self.bsystot))  # poisson signal + background log likelihood
+fudge=0.735 * 0.6
+SRBfudge=0.735 * 0.2
+SRA150_2b = tools.Experiment(name='SRA150_2b', o=102, ssys=0.13, b=94. , bsys=13./94. , sK=1.08*fudge, outdir=baseoutdir, obslim=38, explim=32)
+SRA200_2b = tools.Experiment(name='SRA200_2b', o=48 , ssys=0.2, b=39. , bsys=6./39.  , sK=1.1*fudge, outdir=baseoutdir, obslim=26, explim=19)
+SRA250_2b = tools.Experiment(name='SRA250_2b', o=14 , ssys=0.1, b=15.8, bsys=2.8/15.8, sK=1.1*fudge, outdir=baseoutdir, obslim=9.0, explim=10.2)
+SRA300_2b = tools.Experiment(name='SRA300_2b', o=7  , ssys=0.23, b=5.9 , bsys=1.1/5.9 , sK=1.1*fudge, outdir=baseoutdir, obslim=7.5, explim=6.5)
+SRA350_2b = tools.Experiment(name='SRA350_2b', o=3  , ssys=0.25, b=2.5 , bsys=0.6/2.5 , sK=1.03*fudge, outdir=baseoutdir, obslim=5.2, explim=4.7)
+SRB_2b    = tools.Experiment(name='SRB_2b'   , o=65 , ssys=0.2, b=64. , bsys=10./64. , sK=1.1*SRBfudge, outdir=baseoutdir, obslim=27, explim=26)
 
 # For tuning purposes we also use the official observed and expected limits on the number of signal events in each signal region (table 7):
-SR_obslim_2b = [38,26,9.0, 7.5,5.2,27]
-SR_explim_2b = [32,19,10.2,6.5,4.7,26]
+#SR_obslim_2b = [38,26,9.0, 7.5,5.2,27]
+#SR_explim_2b = [32,19,10.2,6.5,4.7,26]
 
-SRs_2b = [SRA150_2b,SRA200_2b,SRA250_2b,SRA300_2b,SRA350_2b,SRB_2b]
+SRs_2b = [SRA150_2b,SRA200_2b,SRA250_2b,SRA300_2b,SRA350_2b]#,SRB_2b]
 
 L_2b = 20.1 #fb^-1 - integrated luminosity used for 2 b-jet analysis
 N_2b = 100000 # Number of detector events simulated by Martin
@@ -144,18 +153,19 @@ N_2b = 100000 # Number of detector events simulated by Martin
 
 #Script options
 XSxBR_limits_only = True
-#genpdfs=True   #turn this to false once pdfs have been generated sufficiently accurately
+genpdfs=False   #turn this to false once pdfs have been generated sufficiently accurately
 #regenCL='ifNone'  #turn to false once CL values have been generated for the given input parameters
-regenCL=True
+regenCL=False
 #regenQdist='ifNone'
-regenQdist=True
+regenQdist=False
 #svals = np.concatenate((np.arange(0.05,1,0.01),np.arange(1,4,0.02),np.arange(5,10,0.1),np.arange(10,20,0.5),np.arange(20,30,1)))
 #svals =  np.concatenate((np.arange(0.001,5,0.5),np.arange(5,50,2)))   #fast version
 #svals =  np.concatenate((np.arange(0.001,5,0.5),np.arange(5,20,2),np.arange(20,60,5)))   #faster version
 #svals =  np.concatenate((np.arange(0.001,5,1),np.arange(5,20,3)))   #fastest version
 svals =  np.concatenate((np.arange(0.001,5,0.5),np.arange(5,20,2),np.arange(20,50,5),np.arange(50,100,10),np.arange(100,200,20)))   #extended version
 
-
+retune = False #Turn on to run systematic uncertainty auto-tuning algorithm. 
+outputSRcontrib = False # Create some pickle files with data for making plots of the SR contributions to each limit.
 
 # Test mcmc
 # Run mcmc with various chain lengths, see how CLs varies
@@ -206,11 +216,30 @@ dtypeMIX = {'names'  : MIXmasses+dnamesSIM,
 
 #(the invalid_raise=False flag lets us skip records with missing data)
 #Stop pair production with both stops decaying to top neutralino
-data_tn  = np.genfromtxt("data/top_neutralino.dat",dtype=dtypeTN,invalid_raise=False)
+#data_tn  = np.genfromtxt("data/top_neutralino.dat",dtype=dtypeTN,invalid_raise=False)
 #Stop pair production with both stops decaying to b chargino.
-data_bc  = np.genfromtxt("data/bchargino_merged.dat",dtype=dtypeBC,invalid_raise=False,skiprows=1)
+#data_bc  = np.genfromtxt("data/bchargino_merged.dat",dtype=dtypeBC,invalid_raise=False,skiprows=1)
 #Stop pair production with one stop decaying to b chargino and the other decaying to top neutralino.
-data_mix = np.genfromtxt("data/mixed_merged.dat",dtype=dtypeMIX,invalid_raise=False)
+#data_mix = np.genfromtxt("data/mixed_merged.dat",dtype=dtypeMIX,invalid_raise=False)
+
+#Stop pair production with both stops decaying to top neutralino
+data_tn  = np.genfromtxt("data/topNeutralinoFinal_fixed.dat",dtype=dtypeTN,invalid_raise=False)
+#Stop pair production with both stops decaying to b chargino.
+data_bc  = np.genfromtxt("data/bcharginoFinal_fixed.dat",dtype=dtypeBC,invalid_raise=False,skiprows=1)
+#Stop pair production with one stop decaying to b chargino and the other decaying to top neutralino.
+data_mix = np.genfromtxt("data/mixedfinal_fixed.dat",dtype=dtypeMIX,invalid_raise=False)
+
+
+#==========================
+# TEMPORARY!
+# Getting limits for grid points (different input files)
+#Stop pair production with both stops decaying to b chargino.
+#data_bc  = np.genfromtxt("data/bcharginoGridResults.dat",dtype=dtypeBC,invalid_raise=False,skiprows=1)
+
+#Stop pair production with one stop decaying to b chargino and the other decaying to top neutralino.
+#data_mix = np.genfromtxt("data/mixedGridResults.dat",dtype=dtypeMIX,invalid_raise=False)
+#==========================
+
 
 #--------------------------------------
 # Can fiddle with the entries of this list to produce plots for some subset of the models
@@ -236,12 +265,12 @@ newdatalist = []
 for data in datalist:
    
    data = recfunctions.rec_append_fields(data,"XS",XSifunc(data['Mstop'])*1000) #convert units to fb
-
+   
    # Append entries for signal yield predictions in each signal region
    Nprod_0lep = L_0lep*data["XS"] # Number of stop pairs produced (integrated luminosity * production cross section)
    Nprod_1lep = L_1lep*data["XS"]
    Nprod_2lep = L_2lep*data["XS"]
-   Nprod_2b   = L_2b*data["XS"]  
+   Nprod_2b   = L_2b*data["XS"]*0.735 # Martin says the b-tagger was run with the wrong efficiency: the extra factor here should correct for this.
    
    # Fraction of stop pairs that decayed into events ID'd as top + neutralino
    #  =(e.g.) numSR1/N_0lep (number of events counted / total number of stop pairs simulated)
@@ -331,37 +360,112 @@ datalist = newdatalist
 
 # Plot limits!   a.getCLvals(svals,regen=regenCLs)
 
-Anames = ['0lep','1lep','2lep','2b']
+Anames = ['0lep',#\
+          '1lep',#\
+          '2lep',#\
+          '2b']
 
-SR_experiments = [SRs_0lep,
-                  SRs_1lep,
-                  SRs_2lep,
+SR_experiments = [SRs_0lep,#\
+                  SRs_1lep,#\
+                  SRs_2lep,#\
                   SRs_2b]
                   
-SR_sfields = [SR_sdata_0lep,
-              SR_sdata_1lep,
-              SR_sdata_2lep,
+SR_sfields = [SR_sdata_0lep,#\
+              SR_sdata_1lep,#\
+              SR_sdata_2lep,#\
               SR_sdata_2b]
 
-SR_obslims = [SR_obslim_0lep,
-              SR_obslim_1lep,
-              SR_obslim_2lep,
-              SR_obslim_2b]
+# Overwrite for testing
+#Anames = ['2lep']
+#SR_experiments = [SRs_2b]
+#SR_experiments = [[SRM110_2lep]]
 
-SR_explims = [SR_explim_0lep,
-              SR_explim_1lep,
-              SR_explim_2lep,
-              SR_explim_2b]
+#SR_obslims = [SR_obslim_0lep,
+#              SR_obslim_1lep,
+#              SR_obslim_2lep,
+#              SR_obslim_2b]
 
+#SR_explims = [SR_explim_0lep,
+#              SR_explim_1lep,
+#              SR_explim_2lep,
+#              SR_explim_2b]
+
+if retune:
+    # Automatic tuning of limits.
+    for Aname, SR_exps in zip(Anames,SR_experiments):
+        Nexps = len(SR_exps)
+     
+        outdir = baseoutdir+'/'+Aname
+        if not os.path.exists(outdir):
+          os.makedirs(outdir) 
+    
+        fname = "{0}/tuning_report.txt".format(outdir)
+        freport = open(fname,"w")
+        freport.write("Results of systematic parameter tuning:\n")
+        freport.close()   
+     
+        for a in SR_exps:
+         
+           # Comparing asymptotic to simulated limits. I think large systematics screw up the agreement
+           # NOTE! Realised that these WON'T agree. The simulate test statistic is a little different to
+           # the asymptotic one. I like the simulated one better at the moment though, and I have sped
+           # up its calculation by a lot, so we will go with that.
+           # a.ssys = 0.5
+           # fig1 = plt.figure(figsize=(6,4))
+           # 
+           # axCL = fig1.add_subplot(111)
+           # axCL.axvline(x=a.obslim,ls='--',color='r')
+           # axCL.axvline(x=a.explim,ls='--',color='k')
+           # # Overlay asymptotic limits to check agreement
+           # a.getCLvals(svals,regen=True,method='asymptotic',savedata=True)
+           # a.plotCL(ax=axCL)
+           # a.getCLvals(svals,regen=True,method='simulate',N=100000,regenQdist=True,savedata=True,simall=True)
+           # a.plotCL(ax=axCL)
+           # axCL.set_xscale('log')
+           # axCL.set_xlim(1,np.max(svals))
+           # axCL.set_xticks([1,2,3,6,10,20,30,60,100,200])
+           # axCL.get_xaxis().set_major_formatter(ScalarFormatter())
+           # fig1.savefig('{0}/{1}_CL-comparison.png'.format(outdir,a.name))
+           # quit()
+    
+           print "Optimising systematic parameters for {0}...".format(a.name)
+           a.autotune(fname)
+    
+           fig1 = plt.figure(figsize=(6,4))
+           #plt.subplots_adjust(left=0.08,right=0.97,bottom=0.07,top=0.93,hspace=0.3)
+           axCL = fig1.add_subplot(111)
+           axCL.axvline(x=a.obslim,ls='--',color='r')
+           axCL.axvline(x=a.explim,ls='--',color='k')
+           # Overlay asymptotic limits to check agreement
+           #a.getCLvals(svals,regen=True,method='asymptotic',savedata=False)
+           #a.plotCL(ax=axCL
+           # After this, the saved values should be using the TUNED systematic parameters
+           a.getCLvals(svals,regen=True,method='simulate',N=100000,regenQdist=True,savedata=True,simall=True)
+           a.plotCL(ax=axCL)
+           #check
+           #expCL=a.getCL_direct(s=svals,method='simulate',N=10000,nobs=a.b,simall=True)
+           #obsCL=a.getCL_direct(s=svals,method='simulate',N=10000,nobs=a.o,simall=True)
+           #axCL.plot(svals,expCL,'g--',lw=2)
+           #axCL.plot(svals,obsCL,'p--',lw=2)
+    
+           axCL.set_xscale('log')
+           axCL.set_xlim(1,np.max(svals))
+           axCL.set_xticks([1,2,3,6,10,20,30,60,100,200])
+           axCL.get_xaxis().set_major_formatter(ScalarFormatter())
+           fig1.savefig('{0}/{1}_CL-tuned.png'.format(outdir,a.name))
+    
 # Now enter loop to produce results for each simplified model:
 firstmodel=True
 for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,masslists)):
+
+   print modelname, len(data)
+
    # some calculations are model independent: do these once only.
    if modeli>0:
       firstmodel=False   
 
-   for Aname, SR_exps, SR_sdata, SR_olims, SR_elims \
-    in zip(Anames,SR_experiments, SR_sfields, SR_obslims, SR_explims):
+   for Aname, SR_exps, SR_sdata\
+    in zip(Anames,SR_experiments, SR_sfields):
       Nexps = len(SR_exps)
    
       outdir = baseoutdir+'/'+Aname
@@ -372,9 +476,10 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
 
       #BRS = np.arange(0.,50.05,0.05)  # branching ratio slices on which to compute CL values
       BRS = np.concatenate((np.arange(0.,1.,0.05),np.arange(1.,2.,0.1),np.arange(2.,10.,0.5),np.arange(10.,50.,1.)))
+      #BRS = np.array([0.5,1.,1.5]) # Fast, for testing
       obsCLBRstacks={}
       expCLBRstacks={}
-      for i,(a,SR,obslim,explim) in enumerate(zip(SR_exps,SR_sdata,SR_olims,SR_elims)):
+      for i,(a,SR) in enumerate(zip(SR_exps,SR_sdata)):
       #for i,(a,SR,obslim,explim) in enumerate(zip([SR1_0lep],['SR1_s'],[SR_obslim[0]],[SR_explim[0]])):
          print "Generating limits for {0}...".format(a.name)
 
@@ -383,11 +488,11 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
             fig1 = plt.figure(figsize=(6,4))
             #plt.subplots_adjust(left=0.08,right=0.97,bottom=0.07,top=0.93,hspace=0.3)
             axCL = fig1.add_subplot(111)
-            axCL.axvline(x=obslim,ls='--',color='r')
-            axCL.axvline(x=explim,ls='--',color='k')
+            axCL.axvline(x=a.obslim,ls='--',color='r')
+            axCL.axvline(x=a.explim,ls='--',color='k')
             #a.getCLvals(svals,regen=regenCL,method='asymptotic')
             #a.plotCL(ax=axCL)
-            a.getCLvals(svals,regen=regenCL,method='simulate',N=2000,regenQdist=regenQdist) #'marg') #'asymptotic')
+            a.getCLvals(svals,regen=regenCL,method='simulate',N=100000,regenQdist=regenQdist,simall=True) #'marg') #'asymptotic')
             a.plotCL(ax=axCL)
             axCL.set_xscale('log')
             axCL.set_xlim(1,np.max(svals))
@@ -407,8 +512,9 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
             #print 'min p-val:',np.min(obsBRstack[i])
          obsCLBRstacks[a.name] = obsBRstack 
          expCLBRstacks[a.name] = expBRstack
-   
-  
+    
+         print obsBRstack.shape
+         
       # Compute the upper 95% limit on the total cross section for the channel
       # To do this have to fold in the known stop pair production cross section, and combine the limits from the various signal regions.
       # First do the combination. For each branching ratio slice we need to find, at every model point, which channel has the highest expected sensitivity (lowest expected CLs value)
@@ -422,6 +528,55 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
          # Determine the combined observed CLs values
          combCLBR_obs[i] = np.choose(combi_maps[i],choices=[obsCLBRstacks[SR.name][i] for SR in SR_exps])
       # Create interpolation functions for the observed CLs values for every data point, interpolating through the BR stack
+       
+      # Stash maps of SR contributions for later
+      print "Writing file", "{0}/SRmap_{1}-{2}.pkl".format(baseoutdir,modelname,Aname)
+      pkl.dump((BRS,data,combi_maps),open("{0}/SRmap_{1}-{2}.pkl".format(baseoutdir,modelname,Aname),"w")) 
+
+      #============ ASIDE! MAPS OF SR CONTRIBUTIONS TO EACH SEARCH ==========================
+      if outputSRcontrib and len(masslist)>2:
+         mst,mc,mn = data['Mstop'], data['Mneut'], data['Mchar']
+         x = np.arange(min(mst),max(mst),10)
+         y = np.arange(min(mn),max(mn),10)
+         X, Y = np.meshgrid(x,y)
+        
+         br_eq_1 = BRS==1 
+         contrib = combi_maps[br_eq_1][0]
+         print contrib   
+
+         # Apply extra mask to pick out particular slices
+         mask = mc-mn==20
+         combi = griddata((mst[mask],mc[mask]), contrib[mask], (X,Y), method='nearest')
+         
+         print combi
+         
+         figexp = plt.figure(figsize=(6.7,5))
+         ax = figexp.add_subplot(111)
+         cols = ['white','red','blue','green','purple','orange','pink','brown','cyan','gray','black']
+         cmap=colors.ListedColormap(cols)
+         bounds=[-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5]
+         norm = colors.BoundaryNorm(bounds,cmap.N)
+         print len(bounds),cmap.N
+         print norm(np.array([0,1,2,3]))
+         ax.imshow(combi,origin='lower',extent=(min(x),max(x),min(y),max(y)),
+                     cmap=cmap,norm=norm,interpolation='nearest')
+         
+         #create a legend
+         proxies = []
+         labels = []
+         for i,SR in enumerate(SR_exps):
+            name = SR.name
+            print i,name,cols[i]
+            proxies+=[Rectangle((0,0),1,1,fc=cols[i])]
+            labels+=[name]
+         leg = ax.legend(proxies,labels,loc=2)
+         plt.setp(leg.get_texts(), fontsize='10')
+         leg.get_frame().set_alpha(0.5)
+         figexp.savefig("{0}/SRmap_{1}-{2}.png".format(baseoutdir,modelname,Aname),dpi=(800/8),bbox_inches='tight')
+
+      #=======================================================
+
+
       #CLinterpfuncs = []
       limitBRvals = []
       print "    Finding 95% confidence limits on BR"
@@ -431,6 +586,9 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
          # each row should be the various CL values one gets for different br values. Interpolate these
          CLifunc = interp.interp1d(datapointCL[sorti],BRS[sorti],bounds_error=False,fill_value=np.nan)
          # Use the interpolating function to find the br value on the CL=0.05 limit
+         print datapointCL[sorti]
+         print BRS[sorti]
+         print 'CLifunc(0.05)=',CLifunc(0.05)
          limitBRvals += [CLifunc(0.05)]
    
       limitBRvals=np.array(limitBRvals)
@@ -438,6 +596,7 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
       # Print out a file containing the limits on the XS*BR
       masses = [data[mass] for mass in masslist] 
       toprint = np.array(masses+[data['XS'],limitBRvals,data['XS']*limitBRvals]).T
+      print len(toprint)
       np.savetxt('{0}/{1}/{1}-XSxBR_limits.txt'.format(outdir,modelname),toprint,fmt="%1.4e")
 
       if XSxBR_limits_only: continue #skip the rest if we don't want the visualisations.
@@ -566,7 +725,7 @@ for modeli,(data,modelname,masslist) in enumerate(zip(datalist,modelnames,massli
          plt.setp(leg.get_texts(), fontsize='10')
          leg.get_frame().set_alpha(0.5)
          figexp.savefig("{0}/{1}/{2}/limfrom.pdf".format(outdir,modelname,chardir),dpi=(800/8),bbox_inches='tight')
-      
+          
          print combi
          print combi.shape
          
